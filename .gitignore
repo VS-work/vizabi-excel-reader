@@ -1,4 +1,7 @@
 .idea
+dist
+
+package-lock.json
 
 # Logs
 *.log*
