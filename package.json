@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "vizabi-excel-reader",
   "scripts": {
-    "start": "node dist/index.js",
+    "start": "node dist/vizabi-excel-reader.js",
     "build": "tsc && npm run webpack -- --env.mode production",
     "test": "",
     "webpack": "webpack"
