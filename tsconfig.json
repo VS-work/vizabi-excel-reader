@@ -1,20 +1,36 @@
 {
     "compilerOptions": {
-        "module": "commonjs",
-        "target": "es6",
-        "noImplicitAny": true,
-        "moduleResolution": "node",
-        "sourceMap": true,
-        "outDir": "dist",
-        "baseUrl": ".",
-        "paths": {
-            "*": [
-                "node_modules/*",
-                "src/types/*"
-            ]
-        }
+      "declaration": true,
+      "target": "es2017",
+      "module": "commonjs",
+      "noImplicitAny": false,
+      "outDir": "lib",
+      "preserveConstEnums": true,
+      "removeComments": true,
+      "typeRoots": ["node_modules/@types"],
+      "moduleResolution": "node",
+      "emitDecoratorMetadata": true,
+      "experimentalDecorators": true,
+      "allowSyntheticDefaultImports": true,
+      "alwaysStrict": true,
+      "sourceMap": true,
+      "noEmitHelpers": true,
+      "importHelpers": true,
+      "strictNullChecks": false,
+      "baseUrl": ".",
+      "lib": [
+        "es2017",
+        "dom"
+      ]
     },
     "include": [
-        "src/**/*"
+      "src/index-backend.ts",
+      "src/index-frontend.ts"
+    ],
+    "exclude": [
+      "dist",
+      "node_modules",
+      "**/*.spec.ts"
     ]
-}
+  }
+
