@@ -9,7 +9,13 @@ export class FrontendFileReader implements IReader {
     fetch(filePath)
       .then(response => response.blob())
       .then(blob => {
-        onFileRead(null, blob);
+        const reader = new FileReader();
+
+        reader.onloadend = function () {
+          onFileRead(null, reader.result);
+        }
+
+        reader.readAsBinaryString(blob);
       })
       .catch(err => {
         onFileRead(`${filePath} read error: ${err}`);
