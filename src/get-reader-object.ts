@@ -1,3 +1,4 @@
+import * as parseDecimal from 'parse-decimal-number';
 import { read, utils } from 'xlsx';
 import { IReader } from './interfaces';
 
@@ -28,6 +29,19 @@ export const getReaderObject = (fileReader: IReader) => ({
     this._basePath = readerInfo.path;
     this.keySize = readerInfo.keySize || 1;
     this.assetsPath = readerInfo.assetsPath || '';
+    this._parseStrategies = [
+      ...[",.", ".,"].map(separator => this._createParseStrategy(separator)),
+      number => number,
+    ];
+
+    Object.assign(this.ERRORS || {}, {
+      WRONG_TIME_COLUMN_OR_UNITS: "reader/error/wrongTimeUnitsOrColumn",
+      NOT_ENOUGH_ROWS_IN_FILE: "reader/error/notEnoughRows",
+      UNDEFINED_DELIMITER: "reader/error/undefinedDelimiter",
+      EMPTY_HEADERS: "reader/error/emptyHeaders",
+      DIFFERENT_SEPARATORS: "reader/error/differentSeparators",
+      FILE_NOT_FOUND: "reader/error/fileNotFoundOrPermissionsOrEmpty"
+    });
   },
 
   async getAsset(asset) {
@@ -57,10 +71,61 @@ export const getReaderObject = (fileReader: IReader) => ({
 
         const result = getDsvFromJSON(json);
 
-        console.log(result);
-
         resolve(result);
       });
     });
+  },
+
+  _createParseStrategy(separators) {
+    return value => {
+      const hasOnlyNumbersOrSeparators = !(new RegExp(`[^-\\d${separators}]`).test(value));
+
+      if (hasOnlyNumbersOrSeparators && value) {
+        const result = parseDecimal(value, separators);
+
+        if (!isFinite(result) || isNaN(result)) {
+          this._isParseSuccessful = false;
+        }
+
+        return result;
+      }
+
+      return value;
+    };
+  },
+
+  _mapRows(rows, query, parsers) {
+    const mapRow = this._getRowMapper(query, parsers);
+    this._failedParseStrategies = 0;
+    for (const parseStrategy of this._parseStrategies) {
+      this._parse = parseStrategy;
+      this._isParseSuccessful = true;
+
+      const result = [];
+      for (const row of rows) {
+        const parsed = mapRow(row);
+
+        if (!this._isParseSuccessful) {
+          this._failedParseStrategies++;
+          break;
+        }
+
+        result.push(parsed);
+      }
+
+      if (this._isParseSuccessful) {
+        if (this._failedParseStrategies === this._parseStrategies.length - 1) {
+          throw this.error(this.ERRORS.DIFFERENT_SEPARATORS);
+        }
+        return result;
+      }
+    }
+  },
+
+  _onLoadError(error) {
+    const { _basepath: path, _lastModified } = this;
+    delete cached[path + _lastModified];
+
+    this._super(error);
   }
 });

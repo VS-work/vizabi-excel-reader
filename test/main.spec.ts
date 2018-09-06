@@ -1,15 +1,17 @@
 import * as chai from 'chai';
-import { ExcelReader } from '../src/index-backend';
+import { excelReaderObject } from '../src/index-backend';
 
-// const expect = chai.expect;
+const expect = chai.expect;
 
-describe('Main', () => {
-  it(`foo`, async () => {
-    ExcelReader.init({
+describe('excel reader object', () => {
+  it('load data', async () => {
+    excelReaderObject.init({
       path: './test/fixtures/basic-2003.xls'
     });
 
-    const res = await ExcelReader.load();
-    console.log(res);
+    const res = await excelReaderObject.load();
+
+    expect(res.columns).to.deep.equal([ 'geo', 'time', 'GDP', 'LEX', 'POP', 'world_region', 'category' ]);
+    expect(res.rows.length).to.equal(6600);
   });
 });
